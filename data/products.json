@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "wireless Headphone",
+    "price": 5000,
+    "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRvYF8LNNQzPenQi3RgywMC-y_WSjqZcttbaOM1Ar5-Pso0KtUmJhMHWNv-pYitrSFuP6D84nGgIfMefu7fgURNwDk3DyQ94g"
+  },
+  {
+    "id": 2,
+    "name": "Air Conditioner",
+    "price": 80000,
+    "imageUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRih06nbVvaGjBhZigwiGVBInI3wrxEaWTt-1gX1Kd3rFOkfGwMIx_zKn6TRRiBhlBpZMrIvt3nul_Mw_cH68TYaU-SAIwakw"
+  },
+  {
+    "id": 3,
+    "name": "Washing Machine",
+    "price": 40000,
+    "imageUrl": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRJDDvbBxHJtlv5J-VJVPdsf-eCQ-hlyv63qJH8LyYq7V-Wv6njdGj_gQB8J0_sJE5BDlVLgHDxocv6h9Fc74uvg6h0rRLtqg"
+  },
+  {
+    "id": 4,
+    "name": "Telivision",
+    "price": 40000,
+    "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQWhJo2aLMcyH2spLF7AItjYn1XC8ehsMPukXcYuyUttrIO8WxtljDQO2bOON0AoUN9iHTflwSB1L1u5087Vrj2k2dzgUsg16ZJPXt56lfJuIVW9r5AFzGBNw"
+  }
+]

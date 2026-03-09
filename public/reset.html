@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Password • Mini Ecommerce</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header-content">
+        <div class="brand">
+          <img src="logo.svg" alt="Mini Ecommerce logo" class="logo-mark" />
+          <div>
+            <h1 class="logo">Mini Ecommerce</h1>
+            <p class="subtitle">Reset password (localStorage demo)</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Products</a>
+          <a href="login.html" class="nav-link">Login</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="register.html" class="nav-link">Register</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container auth-main">
+      <div class="auth-grid">
+        <section class="auth-card">
+          <h2>Reset password</h2>
+          <p>
+            This page lets you change the saved demo password in this browser.
+            It does not send any email or talk to a real database.
+          </p>
+
+          <form id="reset-form" class="form">
+            <div class="form-row">
+              <label for="reset-email">Registered Email</label>
+              <input
+                type="email"
+                id="reset-email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="reset-password">New Password</label>
+              <input
+                type="password"
+                id="reset-password"
+                placeholder="New password"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="reset-confirm">Confirm New Password</label>
+              <input
+                type="password"
+                id="reset-confirm"
+                placeholder="Repeat new password"
+                required
+              />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Update password</button>
+              <a href="login.html" class="btn ghost">Back to login</a>
+            </div>
+          </form>
+        </section>
+
+        <section class="auth-illustration">
+          <h3>How this works</h3>
+          <p>
+            The email and password are saved only in
+            <strong>localStorage</strong> on this computer, not in a backend
+            database. This keeps the project inside your CRUD syllabus.
+          </p>
+          <ul class="auth-list">
+            <li>Checks that the email matches the saved demo user</li>
+            <li>Updates the password stored in localStorage</li>
+            <li>Lets you log in again with the new password</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const resetForm = document.getElementById("reset-form");
+
+      if (resetForm) {
+        resetForm.addEventListener("submit", event => {
+          event.preventDefault();
+
+          const email = document.getElementById("reset-email").value.trim();
+          const newPassword = document.getElementById("reset-password").value;
+          const confirmPassword =
+            document.getElementById("reset-confirm").value;
+
+          if (!email || !newPassword || !confirmPassword) {
+            alert("Please fill all fields.");
+            return;
+          }
+
+          if (newPassword !== confirmPassword) {
+            alert("New passwords do not match.");
+            return;
+          }
+
+          const savedEmail = localStorage.getItem("demoUserEmail");
+
+          if (!savedEmail) {
+            alert(
+              "No account found in this browser. Please sign up or register first."
+            );
+            return;
+          }
+
+          if (email !== savedEmail) {
+            alert(
+              "This email does not match the saved demo account email in this browser."
+            );
+            return;
+          }
+
+          localStorage.setItem("demoUserPassword", newPassword);
+
+          alert(
+            "Password updated for the demo account in this browser. You can now login with the new password."
+          );
+
+          window.location.href = "login.html";
+        });
+      }
+    </script>
+  </body>
+  </html>
+

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register • Mini Ecommerce</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header-content">
+        <div class="brand">
+          <img src="logo.svg" alt="Mini Ecommerce logo" class="logo-mark" />
+          <div>
+            <h1 class="logo">Mini Ecommerce</h1>
+            <p class="subtitle">Register page (same as signup, for clarity)</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Products</a>
+          <a href="login.html" class="nav-link">Login</a>
+          <a href="signup.html" class="nav-link">Sign Up</a>
+          <a href="register.html" class="nav-link nav-link-active">Register</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container auth-main">
+      <div class="auth-grid">
+        <section class="auth-card">
+          <h2>Register</h2>
+          <p>
+            This register page is intentionally very similar to the signup page.
+            You can show either one in your demo.
+          </p>
+
+          <form id="register-form" class="form">
+            <div class="form-row">
+              <label for="register-name">Full Name</label>
+              <input
+                type="text"
+                id="register-name"
+                placeholder="Your name"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="register-email">Email</label>
+              <input
+                type="email"
+                id="register-email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="register-password">Password</label>
+              <input
+                type="password"
+                id="register-password"
+                placeholder="Create a password"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="register-confirm">Confirm Password</label>
+              <input
+                type="password"
+                id="register-confirm"
+                placeholder="Repeat password"
+                required
+              />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Register</button>
+              <a href="login.html" class="btn ghost">Back to login</a>
+            </div>
+          </form>
+        </section>
+
+        <section class="auth-illustration">
+          <h3>About this register page</h3>
+          <p>
+            This page lets a new shopper register with their basic details
+            before using the store. It captures their name, email and a strong
+            password so they can log in again later in the same browser.
+          </p>
+          <ul class="auth-list">
+            <li>Collects full name and contact email</li>
+            <li>Requires a strong password with symbols and numbers</li>
+            <li>Stores the demo user data safely in localStorage only</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const registerForm = document.getElementById("register-form");
+
+      if (registerForm) {
+        registerForm.addEventListener("submit", event => {
+          event.preventDefault();
+
+          const name = document.getElementById("register-name").value.trim();
+          const email = document.getElementById("register-email").value.trim();
+          const password = document.getElementById("register-password").value;
+          const confirm = document.getElementById("register-confirm").value;
+
+          if (!name || !email || !password || !confirm) {
+            alert("Please fill all fields.");
+            return;
+          }
+
+          if (password !== confirm) {
+            alert("Passwords do not match.");
+            return;
+          }
+
+          const existingEmail = localStorage.getItem("demoUserEmail");
+
+          if (existingEmail && existingEmail === email) {
+            alert(
+              "An account with this email already exists in this browser. Please login or use a different email."
+            );
+            return;
+          }
+
+          const strongPasswordPattern =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+          if (!strongPasswordPattern.test(password)) {
+            alert(
+              "Password must be at least 8 characters long and contain uppercase, lowercase, numbers and special symbols."
+            );
+            return;
+          }
+
+          localStorage.setItem("demoUserName", name);
+          localStorage.setItem("demoUserEmail", email);
+          localStorage.setItem("demoUserPassword", password);
+          localStorage.setItem("loggedInUserName", name);
+          localStorage.setItem("loggedInUserEmail", email);
+
+          alert(
+            "Registration saved in this browser (localStorage). Backend remains focused on product CRUD."
+          );
+
+          window.location.href = "index.html";
+        });
+      }
+    </script>
+  </body>
+  </html>
+
