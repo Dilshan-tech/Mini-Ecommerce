@@ -3,120 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login • Mini Ecommerce</title>
+    <title>Login | LuxeCart</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="header">
-      <div class="container header-content">
-        <div class="brand">
-          <img src="logo.svg" alt="Mini Ecommerce logo" class="logo-mark" />
-          <div>
-            <h1 class="logo">Mini Ecommerce</h1>
-            <p class="subtitle">Demo login page (frontend only)</p>
-          </div>
-        </div>
-        <nav class="nav">
-          <a href="index.html" class="nav-link">Products</a>
-          <a href="login.html" class="nav-link nav-link-active">Login</a>
-          <a href="signup.html" class="nav-link">Sign Up</a>
-          <a href="register.html" class="nav-link">Register</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="container auth-main">
-      <div class="auth-grid">
-        <section class="auth-card">
-          <h2>Login</h2>
-          <p>Use this page to pretend a customer is logging into the store.</p>
-
-          <form id="login-form" class="form">
-            <div class="form-row">
-              <label for="login-email">Email</label>
-              <input
-                type="email"
-                id="login-email"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div class="form-row">
-              <label for="login-password">Password</label>
-              <input
-                type="password"
-                id="login-password"
-                placeholder="Enter password"
-                required
-              />
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn primary">Login</button>
-              <a href="signup.html" class="btn ghost">Create new account</a>
-              <a href="reset.html" class="btn ghost">Forgot password?</a>
-            </div>
-          </form>
-        </section>
-
-        <section class="auth-illustration">
-          <h3>About this page</h3>
-          <p>
-            This login form is only for design and project structure. Your
-            syllabus covers CRUD operations, not full authentication, so no real
-            login is happening here.
-          </p>
-          <ul class="auth-list">
-            <li>Cleanly separated login screen</li>
-            <li>Matches the ecommerce theme</li>
-            <li>Shows you understand real projects need auth later</li>
-          </ul>
-        </section>
-      </div>
-    </main>
-
-    <script>
-      const loginForm = document.getElementById("login-form");
-
-      if (loginForm) {
-        loginForm.addEventListener("submit", event => {
-          event.preventDefault();
-
-          const emailInput = document.getElementById("login-email");
-          const passwordInput = document.getElementById("login-password");
-
-          const savedEmail = localStorage.getItem("demoUserEmail");
-          const savedPassword = localStorage.getItem("demoUserPassword");
-
-          if (!savedEmail || !savedPassword) {
-            alert(
-              "No account saved yet. Please sign up or register first. (Data is saved only in this browser using localStorage.)"
-            );
-            return;
-          }
-
-          if (
-            emailInput.value.trim() === savedEmail &&
-            passwordInput.value === savedPassword
-          ) {
-            const savedName = localStorage.getItem("demoUserName") || "";
-            if (savedName) {
-              localStorage.setItem("loggedInUserName", savedName);
-            } else {
-              localStorage.removeItem("loggedInUserName");
-            }
-            localStorage.setItem("loggedInUserEmail", savedEmail);
-            alert(
-              "Login successful! This is a demo login stored with localStorage, not a real authentication system."
-            );
-            window.location.href = "index.html";
-          } else {
-            alert("Invalid email or password (checked only in localStorage).");
-          }
-        });
-      }
-    </script>
+    <script src="/js/common.js"></script>
+    <script src="/js/auth.js"></script>
   </body>
-  </html>
+</html>
 
