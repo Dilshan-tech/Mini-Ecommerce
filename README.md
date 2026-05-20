@@ -22,23 +22,36 @@ This project is now upgraded to a production-style Node.js + Express + MongoDB s
 npm install
 ```
 
-## 3) Environment setup
+## 3) Environment Setup
 
-Create `.env` in project root (already created in this workspace). Example:
+Create a `.env` in the project root. LuxeCart uses a secure centralized environment validator (`config/envValidator.js`) at startup to ensure all critical variables are configured correctly.
+
+### Configured Variables
 
 ```env
-PORT=5000
-NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/ecommerceDB
-JWT_SECRET=dev_jwt_secret_change_me_12345
-JWT_EXPIRES_IN=1d
-CLIENT_ORIGIN=http://localhost:5000
+# Server Config
+PORT=5000                                 # Port to run the server on (default: 5000)
+NODE_ENV=development                       # Mode: development or production
+CLIENT_ORIGIN=http://localhost:5000        # Allowed CORS origins
+
+# Database
+MONGO_URI=mongodb://localhost:27017/ecommerceDB   # Mongo Connection String
+
+# Security & Auth
+JWT_SECRET=dev_jwt_secret_change_me_12345 # Cryptographic secret for signing tokens
+JWT_EXPIRES_IN=1d                         # Token lifespan
+
+# Optional: Google OAuth Setup
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+
+# Optional: Cloudinary Media Uploads
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
+
+# Seed Credentials
 ADMIN_NAME=System Admin
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=Admin@12345

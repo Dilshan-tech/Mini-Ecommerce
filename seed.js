@@ -51,21 +51,25 @@ const seedDB = async () => {
     await connectDB();
     console.log("Connected to DB...");
 
-    // Try to find an admin, or just the first user
-    let user = await User.findOne({ role: "admin" });
-    if (!user) {
-      user = await User.findOne({});
-    }
+    const bcrypt = require("bcryptjs");
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@luxecart.com";
+    const adminName = process.env.ADMIN_NAME || "Admin User";
+    const adminPassword = process.env.ADMIN_PASSWORD || "password123";
 
-    // If no user exists, create a dummy admin
+    let user = await User.findOne({ email: adminEmail });
     if (!user) {
-      console.log("No user found. Creating a dummy admin user...");
+      console.log(`Creating admin user: ${adminEmail}...`);
+      const passwordHash = await bcrypt.hash(adminPassword, 10);
       user = await User.create({
-        name: "Admin User",
-        email: "admin@luxecart.com",
-        password: "password123",
-        role: "admin"
+        name: adminName,
+        email: adminEmail,
+        password: passwordHash,
+        role: "admin",
+        authProvider: "local"
       });
+      console.log("Admin user created.");
+    } else {
+      console.log(`Admin user ${adminEmail} already exists.`);
     }
 
     console.log("Clearing old products...");

@@ -85,9 +85,14 @@ function renderCompareModal() {
     showToast("Please select at least 2 products to compare.", true);
     return;
   }
-
   const items = allProducts.filter(p => compareList.includes(p._id));
   
+  const bestMatchId = items.reduce((best, p) => {
+    const scoreB = (p.discount || 0) * 1.5 + (p.trustScore || 40);
+    const scoreBest = (best.discount || 0) * 1.5 + (best.trustScore || 40);
+    return scoreB > scoreBest ? p : best;
+  }, items[0])._id;
+
   modal = document.createElement("div");
   modal.id = "compare-modal-overlay";
   modal.style.position = "fixed";
@@ -100,26 +105,78 @@ function renderCompareModal() {
   modal.style.padding = "20px";
   
   modal.innerHTML = `
-    <div class="card fade-in" style="width:100%; max-width:900px; max-height:90vh; overflow-y:auto;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-        <h2>Compare Products</h2>
-        <button id="close-compare" class="btn btn-secondary">Close</button>
+    <div class="card fade-in" style="width:100%; max-width:960px; max-height:92vh; overflow-y:auto; padding:24px; border-radius:20px; border:1px solid var(--stroke);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; border-bottom:1px solid var(--stroke); padding-bottom:16px;">
+        <div>
+          <h2 style="margin:0; font-family:var(--font-heading);">Comparison Assistant</h2>
+          <p class="muted" style="margin:4px 0 0; font-size:0.88rem;">Side-by-side premium specification highlight and value breakdown</p>
+        </div>
+        <button id="close-compare" class="btn btn-secondary" style="padding:8px 16px;">Close Dialog</button>
       </div>
-      <div style="display:grid; grid-template-columns: repeat(${items.length}, 1fr); gap:16px;">
+      <div style="display:grid; grid-template-columns: repeat(${items.length}, 1fr); gap:20px; align-items:stretch;">
         ${items.map(p => {
           const finalPrice = p.price * (1 - (p.discount || 0) / 100);
+          const savings = p.price * (p.discount || 0) / 100;
+          const isBest = p._id === bestMatchId;
+          const ecoVal = p.category === 'Accessories' || p.category === 'Home' ? 'A+' : (p.price > 300 ? 'B' : 'A');
+          const needIdx = p.price < 150 ? '85%' : '40%';
+          const wantIdx = p.price < 150 ? '15%' : '60%';
+
           return `
-          <div class="card" style="background:var(--bg-card); padding:16px; border-radius:8px;">
-            <img src="${p.imageUrl || '/logo.svg'}" style="width:100%; height:150px; object-fit:cover; border-radius:4px; margin-bottom:12px;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
-            <h3>${p.name}</h3>
-            <p class="pill" style="display:inline-block; margin-bottom:8px;">${p.category}</p>
-            <p style="font-size:1.25rem; font-weight:bold; color:var(--brand);">$${finalPrice.toFixed(2)}</p>
-            ${p.discount ? `<p class="muted" style="font-size:0.875rem;">Original: <s>$${p.price}</s> (${p.discount}% OFF)</p>` : ''}
-            <p style="margin-top:12px; font-size:0.9rem;">${p.description || "No description"}</p>
-            <hr style="margin:12px 0; border-color:var(--border);" />
-            <p style="font-size:0.9rem;"><strong>Stock:</strong> ${p.stock > 0 ? p.stock + ' left' : 'Out of Stock'}</p>
-            <p style="font-size:0.9rem;"><strong>Rating:</strong> ★ ${getRating(p)}</p>
-            <button class="btn" style="width:100%; margin-top:12px;" onclick="addToCartAndClose('${p._id}')">Add to Cart</button>
+          <div class="card compare-card" style="background:var(--bg-card); padding:20px; border-radius:16px; position:relative; border: ${isBest ? '2px solid var(--brand)' : '1px solid var(--stroke)'}; box-shadow: ${isBest ? '0 10px 30px rgba(99,102,241,0.12)' : 'none'}; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+            ${isBest ? `
+              <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(90deg, var(--brand), var(--brand-2)); color:white; padding:4px 14px; border-radius:99px; font-size:0.7rem; font-weight:800; letter-spacing:0.05em; box-shadow:0 4px 12px rgba(99,102,241,0.25); z-index:10; white-space:nowrap;">
+                🏆 BEST VALUE CHOICE
+              </div>
+            ` : ""}
+            <div>
+              <div style="position:relative; margin-bottom:14px;">
+                <img src="${p.imageUrl || '/logo.svg'}" style="width:100%; height:160px; object-fit:cover; border-radius:12px; border:1px solid var(--stroke);" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
+              </div>
+              <div style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span class="pill" style="font-size:0.72rem; padding:4px 10px; background:rgba(99,102,241,0.06);">${p.category}</span>
+                <span class="eco-label" style="font-size:0.7rem;">🌿 Eco: ${ecoVal}</span>
+              </div>
+              <h3 style="margin:0 0 10px; font-size:1.05rem; font-family:var(--font-heading); line-height:1.3; font-weight:700; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; height:44px;" title="${p.name}">${p.name}</h3>
+              
+              <div style="background:var(--bg-soft); padding:10px 12px; border-radius:12px; margin-bottom:16px; border:1px solid var(--stroke);">
+                <div style="font-size:1.35rem; font-weight:800; color:var(--brand-2);">$${finalPrice.toFixed(2)}</div>
+                ${p.discount ? `
+                  <div style="font-size:0.78rem; display:flex; justify-content:space-between; margin-top:2px;" class="muted">
+                    <span>Original: <s>$${p.price.toFixed(2)}</s></span>
+                    <span style="color:var(--success); font-weight:700;">-${p.discount}% OFF</span>
+                  </div>
+                ` : `
+                  <div style="font-size:0.78rem; margin-top:2px;" class="muted">Standard Price Match</div>
+                `}
+              </div>
+
+              <!-- Specs Side-by-side checklist -->
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:0.8rem; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; padding-bottom:6px; border-bottom:1px solid var(--stroke);">
+                  <span class="muted">Rating & Review:</span>
+                  <strong>★ ${getRating(p)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:6px; border-bottom:1px solid var(--stroke);">
+                  <span class="muted">Eco Friendly:</span>
+                  <span style="color:var(--success); font-weight:700;">${ecoVal} Grade</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:6px; border-bottom:1px solid var(--stroke);">
+                  <span class="muted">Need Index:</span>
+                  <strong style="color:var(--brand);">${needIdx}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding-bottom:6px; border-bottom:1px solid var(--stroke);">
+                  <span class="muted">Availability:</span>
+                  <strong style="color:${p.stock > 0 ? 'var(--success)' : 'var(--danger)'};">${p.stock > 0 ? `${p.stock} units` : 'Out of stock'}</strong>
+                </div>
+              </div>
+              
+              <p class="muted" style="font-size:0.78rem; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin:0 0 16px; height:50px;">
+                ${p.description || "No description available."}
+              </p>
+            </div>
+            
+            <button class="btn" style="width:100%; padding:10px 14px; font-weight:700; font-size:0.88rem; margin-top:auto;" onclick="addToCartAndClose('${p._id}')">🛒 Add to Cart</button>
           </div>
         `}).join("")}
       </div>
@@ -183,13 +240,21 @@ function renderProducts(items) {
   }
 
   list.innerHTML = items
-  list.innerHTML = items
     .map(product => {
       const finalPrice = product.price * (1 - (product.discount || 0) / 100);
       const savings = product.price * (product.discount || 0) / 100;
       const isHighTrust = product.trustScore >= 50;
       const isPopular = product.isTrending || product.isBestSeller;
       const isLimited = product.stock > 0 && product.stock < 20;
+      const ecoVal = product.category === 'Accessories' || product.category === 'Home' ? 'A+' : (product.price > 300 ? 'B' : 'A');
+      const needIndexVal = product.price < 150 ? '85%' : '40%';
+      const wantIndexVal = product.price < 150 ? '15%' : '60%';
+
+      const storyText = product.category === "Electronics"
+        ? "An investment in top-tier performance to streamline your productivity."
+        : product.category === "Accessories"
+        ? "Meticulously crafted detailing that adds effortless style to your daily carry."
+        : "Consciously curated to bring lasting value and comfort into your life.";
 
       return `
       <article class="product-card fade-in">
@@ -204,11 +269,17 @@ function renderProducts(items) {
             ${isHighTrust ? `<span class="badge" style="background:#2ecc71; color:#000;">🛡️ High Trust</span>` : ""}
             ${isPopular && !isHighTrust ? `<span class="badge" style="background:#f39c12; color:#000;">🔥 Popular</span>` : ""}
             ${isLimited ? `<span class="badge" style="background:#e67e22; color:#fff;">⏳ Limited Stock</span>` : ""}
+            <span class="eco-label" title="Sustainability Rating">🌿 Eco: ${ecoVal}</span>
           </div>
           <h3>${product.name}</h3>
-          <p class="muted">${product.description || "No description available."}</p>
+          <p class="muted" style="margin-bottom: 6px;">${product.description || "No description available."}</p>
           
-          <div style="background:var(--bg-input); padding:8px; border-radius:4px; margin:12px 0;">
+          <!-- Smart Mindful Storytelling Snippet -->
+          <div class="story-card" style="margin: 4px 0 10px; font-size: 0.78rem; padding: 8px 12px;">
+            ${storyText}
+          </div>
+
+          <div style="background:var(--bg-input); padding:8px; border-radius:4px; margin:8px 0;">
             <div class="price-line" style="margin-bottom:0;">
               <span class="price">$${finalPrice.toFixed(2)}</span>
               <span class="rating">★ ${getRating(product)}</span>
@@ -221,12 +292,23 @@ function renderProducts(items) {
             ` : ""}
           </div>
 
+          <!-- Need vs Want Purchase Mindful Slider Indicator -->
+          <div class="need-slider-wrap" style="margin-top: 4px; margin-bottom: 12px; padding: 8px 10px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:600;" class="muted">
+              <span>Need index: ${needIndexVal}</span>
+              <span>Want index: ${wantIndexVal}</span>
+            </div>
+            <div class="need-bar" style="height: 4px; margin-top: 4px;">
+              <div class="need-bar-fill" style="width: ${needIndexVal};"></div>
+            </div>
+          </div>
+
           <div class="actions">
             <button class="btn btn-secondary" data-quick="${product._id}">Quick View</button>
             <button class="btn" data-cart="${product._id}">Add to Cart</button>
             <button class="btn" data-buy="${product._id}">Buy Now</button>
           </div>
-          ${isAdmin ? `<div class="actions"><button class="btn btn-secondary" data-edit="${product._id}">Edit</button><button class="btn btn-danger" data-delete="${product._id}">Delete</button></div>` : ""}
+          ${isAdmin ? `<div class="actions" style="margin-top:8px;"><button class="btn btn-secondary" data-edit="${product._id}">Edit</button><button class="btn btn-danger" data-delete="${product._id}">Delete</button></div>` : ""}
         </div>
       </article>`;
     })

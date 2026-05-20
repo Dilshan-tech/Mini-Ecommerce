@@ -72,11 +72,11 @@ function toggleWishlist(product) {
 function showToast(message, isError = false) {
   const toast = document.getElementById("toast");
   if (!toast) return;
-  toast.textContent = message;
+  toast.innerHTML = `<span style="font-size:1.15rem; margin-right:4px;">${isError ? "⚠️" : "✨"}</span> ${message}`;
   toast.className = `toast ${isError ? "error" : "success"} show`;
   setTimeout(() => {
     toast.classList.remove("show");
-  }, 2200);
+  }, 2800);
 }
 
 function handleUnauthorized(message = "Session expired. Please login again.") {
@@ -104,8 +104,8 @@ function saveActivity(event) {
     // no-op: activity should never block UX
   }
 
-  const token = getAuthToken();
-  if (!token) return;
+  const user = getCurrentUser();
+  if (!user) return;
   apiRequest(`${API_BASE}/activity`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -114,8 +114,8 @@ function saveActivity(event) {
 }
 
 async function getActivityFeed() {
-  const token = getAuthToken();
-  if (token) {
+  const user = getCurrentUser();
+  if (user) {
     try {
       const data = await apiRequest(`${API_BASE}/activity?limit=250`);
       return data.items.map(item => ({
@@ -316,7 +316,7 @@ function renderShell(activePage = "") {
         </nav>
         <div class="nav-actions">
           <div class="search-wrap">
-            <input id="global-search" placeholder="Search products..." />
+            <input id="global-search" placeholder="Search products..." autocomplete="off" />
             <div id="search-suggest" class="search-suggest"></div>
           </div>
           <a href="/wishlist.html" class="icon-btn">❤<span id="wishlist-count" class="chip">0</span></a>
@@ -366,11 +366,32 @@ function renderShell(activePage = "") {
         <button id="checkout-proceed" type="button">Proceed to Pay</button>
       </div>
     </section>
+
+    <!-- LuxeBot Floating Concierge Assistant -->
+    <button id="luxebot-launcher" class="luxebot-launcher" title="Ask LuxeBot Concierge">🤖</button>
+    <div id="luxebot-chat" class="luxebot-chat">
+      <div class="luxebot-header">
+        <h4>🤖 LuxeBot Concierge</h4>
+        <button id="luxebot-close" style="background:transparent; border:none; color:white; font-size:1.15rem; cursor:pointer;">✕</button>
+      </div>
+      <div id="luxebot-messages" class="luxebot-body"></div>
+      <div class="luxebot-quick">
+        <button data-bot-q="Suggest setup under $1000">💻 Tech Setup</button>
+        <button data-bot-q="Best discount items?">🔥 Top Deals</button>
+        <button data-bot-q="Eco-friendly choices">🌿 Eco Score</button>
+        <button data-bot-q="What is LuxeCart?">✨ Mindful Info</button>
+      </div>
+      <form id="luxebot-form" class="luxebot-input-area" style="margin:0;">
+        <input id="luxebot-input" placeholder="Ask about products, setups, vibes..." autocomplete="off" />
+        <button type="submit" style="padding:10px 14px; margin:0; border-radius:12px;">Send</button>
+      </form>
+    </div>
   `;
 
   setupGlobalSearch();
   refreshHeaderBadges();
   document.getElementById("theme-toggle")?.addEventListener("click", toggleTheme);
+  setupLuxeBot();
 }
 
 function refreshHeaderBadges() {
@@ -416,3 +437,177 @@ async function setupGlobalSearch() {
     }, 180);
   });
 }
+
+function setupLuxeBot() {
+  const launcher = document.getElementById("luxebot-launcher");
+  const chat = document.getElementById("luxebot-chat");
+  const close = document.getElementById("luxebot-close");
+  const messages = document.getElementById("luxebot-messages");
+  const form = document.getElementById("luxebot-form");
+  const input = document.getElementById("luxebot-input");
+
+  if (!launcher || !chat) return;
+
+  launcher.addEventListener("click", () => {
+    chat.classList.toggle("show");
+    if (messages.children.length === 0) {
+      appendBotMessage("👋 Hello! I'm LuxeBot, your personal shopping concierge. Ask me for suggestions, setups, or deals to elevate your shopping journey today!");
+    }
+  });
+
+  close?.addEventListener("click", () => {
+    chat.classList.remove("show");
+  });
+
+  document.querySelectorAll("[data-bot-q]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const q = btn.dataset.botQ;
+      handleUserQuery(q);
+    });
+  });
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const txt = input.value.trim();
+    if (!txt) return;
+    input.value = "";
+    handleUserQuery(txt);
+  });
+
+  function appendBotMessage(html) {
+    const el = document.createElement("div");
+    el.className = "luxebot-msg bot fade-in";
+    el.innerHTML = html;
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function appendUserMessage(txt) {
+    const el = document.createElement("div");
+    el.className = "luxebot-msg user fade-in";
+    el.textContent = txt;
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function handleUserQuery(q) {
+    appendUserMessage(q);
+
+    const typing = document.createElement("div");
+    typing.className = "luxebot-msg bot fade-in";
+    typing.textContent = "⚡ LuxeBot is searching database...";
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+
+    setTimeout(async () => {
+      typing.remove();
+      const response = await getLuxeBotReply(q);
+      appendBotMessage(response);
+
+      messages.querySelectorAll("[data-bot-add]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          try {
+            const product = await apiRequest(`${API_BASE}/products/${btn.dataset.botAdd}`);
+            addToCart(product, 1);
+            showToast(`Added ${product.name} to cart!`);
+          } catch (err) {
+            showToast("Added item to cart");
+          }
+        });
+      });
+    }, 600);
+  }
+}
+
+async function getLuxeBotReply(q) {
+  const norm = q.toLowerCase();
+
+  if (norm.includes("setup") || norm.includes("under") || norm.includes("tech")) {
+    try {
+      const data = await apiRequest(`${API_BASE}/products?limit=12&page=1`);
+      const items = data.items.filter(p => p.price < 1000 && (p.category === "Electronics" || p.category === "Accessories")).slice(0, 3);
+      if (items.length) {
+        let cards = items.map(p => `
+          <div style="background:var(--bg); border:1px solid var(--stroke); border-radius:10px; padding:10px; margin-top:8px;">
+            <img src="${p.imageUrl || '/logo.svg'}" style="width:100%; height:80px; object-fit:cover; border-radius:6px; margin-bottom:6px;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
+            <div style="font-weight:700; font-size:0.85rem; line-height:1.2; margin-bottom:4px;">${p.name}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; color:var(--brand-2); font-size:0.9rem;">$${p.price}</span>
+              <button class="btn" style="padding:4px 8px; font-size:0.7rem; border-radius:6px; margin:0;" data-bot-add="${p._id}">Add</button>
+            </div>
+          </div>
+        `).join("");
+        return `💻 Here is a custom tech setup under your budget:<br/>${cards}`;
+      }
+    } catch (e) {}
+    return "💻 I recommend a premium Keychron Mechanical Keyboard ($89), Fossil Smartwatch ($299), and Sony XM5 Headphones ($349) for a stunning setup under $1000!";
+  }
+
+  if (norm.includes("discount") || norm.includes("deal") || norm.includes("sale")) {
+    try {
+      const data = await apiRequest(`${API_BASE}/products?limit=12&page=1`);
+      const items = data.items.filter(p => p.discount > 0).slice(0, 3);
+      if (items.length) {
+        let cards = items.map(p => `
+          <div style="background:var(--bg); border:1px solid var(--stroke); border-radius:10px; padding:10px; margin-top:8px;">
+            <div style="font-weight:700; font-size:0.85rem; line-height:1.2; margin-bottom:4px;">${p.name}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span><s>$${p.price}</s> <strong style="color:var(--danger); font-size:0.9rem;">-${p.discount}%</strong></span>
+              <button class="btn" style="padding:4px 8px; font-size:0.7rem; border-radius:6px; margin:0;" data-bot-add="${p._id}">Add</button>
+            </div>
+          </div>
+        `).join("");
+        return `🔥 Here are today's top discounted deals:<br/>${cards}`;
+      }
+    } catch (e) {}
+    return "🔥 Today's top discount picks: Ninja Air Fryer Max (20% OFF) and Keychron Mechanical Keyboard (15% OFF)! Check them out in the catalog.";
+  }
+
+  if (norm.includes("eco") || norm.includes("sustain") || norm.includes("environment")) {
+    try {
+      const data = await apiRequest(`${API_BASE}/products?limit=12&page=1`);
+      const items = data.items.filter(p => p.category === "Accessories" || p.category === "Home" || p.category === "Fashion").slice(0, 3);
+      if (items.length) {
+        let cards = items.map(p => `
+          <div style="background:var(--bg); border:1px solid var(--stroke); border-radius:10px; padding:10px; margin-top:8px;">
+            <div style="font-weight:700; font-size:0.85rem; line-height:1.2; margin-bottom:2px;">${p.name}</div>
+            <span class="eco-label" style="font-size:0.65rem; padding:2px 6px; margin-bottom:6px;">🌿 EcoScore: A+</span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; color:var(--success); font-size:0.9rem;">$${p.price}</span>
+              <button class="btn" style="padding:4px 8px; font-size:0.7rem; border-radius:6px; margin:0;" data-bot-add="${p._id}">Add</button>
+            </div>
+          </div>
+        `).join("");
+        return `🌿 Here are our top eco-mindful, highly sustainable choices:<br/>${cards}`;
+      }
+    } catch (e) {}
+    return "🌿 Some great eco-friendly choices: Hydro Flask Wide Mouth Water Bottle (built to replace single-use plastics) and Minimalist Linen Shirts!";
+  }
+
+  if (norm.includes("luxecart") || norm.includes("what is") || norm.includes("about")) {
+    return "✨ <strong>LuxeCart</strong> is an elite, high-fidelity e-commerce experience. We prioritize mindful consumption with dynamic budget optimization models, need-vs-want indicators, and custom lifestyle vibes. We bridge premium aesthetics with secure payment simulation!";
+  }
+
+  return "🤖 I am searching my database for that inquiry. Try asking for: 'Suggest setup under $1000', 'Best discount items?', 'Eco-friendly choices', or feel free to browse our Products collection! ✨";
+}
+
+// Auto-sync session across pages if user is authenticated via cookie but localStorage is empty
+(async () => {
+  if (!localStorage.getItem("user")) {
+    try {
+      const response = await fetch("/api/users/me", { credentials: "include" });
+      if (response.ok) {
+        const user = await response.json();
+        localStorage.setItem("user", JSON.stringify(user));
+        refreshHeaderBadges();
+        const loginBtn = document.querySelector('a[href="/login.html"]');
+        if (loginBtn) {
+          loginBtn.href = "/profile.html";
+          loginBtn.textContent = "👤";
+        }
+      }
+    } catch (e) {
+      // Ignore guest or unauthorized
+    }
+  }
+})();
