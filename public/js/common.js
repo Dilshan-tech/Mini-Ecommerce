@@ -4,6 +4,12 @@ const WISHLIST_KEY = "wishlist_items";
 const ACTIVITY_KEY = "activity_feed";
 const THEME_KEY = "theme_preference";
 
+function formatPrice(usdAmount) {
+  if (usdAmount === undefined || usdAmount === null || isNaN(usdAmount)) return "₹0";
+  const inr = Math.round(Number(usdAmount) * 83);
+  return "₹" + inr.toLocaleString("en-IN");
+}
+
 function getAuthToken() {
   return localStorage.getItem("token");
 }
@@ -169,7 +175,7 @@ function buildCheckoutItems(items) {
       item => `
         <div class="checkout-row">
           <span>${item.name} x${item.qty || 1}</span>
-          <strong>$${(item.price * (1 - (item.discount || 0) / 100) * (item.qty || 1)).toFixed(2)}</strong>
+          <strong>${formatPrice(item.price * (1 - (item.discount || 0) / 100) * (item.qty || 1))}</strong>
         </div>`
     )
     .join("");
@@ -192,14 +198,14 @@ function openCheckoutModal(items, source = "checkout") {
 
     const total = items.reduce((sum, item) => sum + item.price * (1 - (item.discount || 0) / 100) * (item.qty || 1), 0);
     const target = items[0];
-    const savings = target ? (target.price * (target.discount || 0) / 100).toFixed(2) : 0;
+    const savings = target ? (target.price * (target.discount || 0) / 100) : 0;
     const isHighTrust = target && target.trustScore >= 50;
 
     const insightHtml = target ? `
       <div style="background:var(--bg-input); padding:12px; border-radius:6px; margin-bottom:16px; border-left:4px solid var(--brand);">
         <h4 style="margin-bottom:8px;">💡 Why buy this?</h4>
         <ul style="margin:0; padding-left:20px; font-size:0.9rem;" class="muted">
-          ${target.discount ? `<li>You are saving <strong style="color:#2ecc71;">$${savings}</strong> today!</li>` : ""}
+          ${target.discount ? `<li>You are saving <strong style="color:#2ecc71;">${formatPrice(savings)}</strong> today!</li>` : ""}
           ${isHighTrust ? `<li><strong>High Trust Score:</strong> Highly rated by the community.</li>` : ""}
           ${target.isBestSeller ? `<li><strong>Best Seller:</strong> Top choice in its category.</li>` : ""}
           ${target.isTrending ? `<li><strong>Trending:</strong> Currently in high demand.</li>` : ""}
@@ -208,7 +214,7 @@ function openCheckoutModal(items, source = "checkout") {
       </div>
     ` : "";
 
-    summary.innerHTML = `${insightHtml}${buildCheckoutItems(items)}<div class="checkout-row total"><span>Total</span><strong>$${total.toFixed(2)}</strong></div>`;
+    summary.innerHTML = `${insightHtml}${buildCheckoutItems(items)}<div class="checkout-row total"><span>Total</span><strong>${formatPrice(total)}</strong></div>`;
     redirectText.textContent = "";
     proceedBtn.disabled = false;
     proceedBtn.textContent = "Proceed to Pay";
@@ -532,7 +538,7 @@ async function getLuxeBotReply(q) {
             <img src="${p.imageUrl || '/logo.svg'}" style="width:100%; height:80px; object-fit:cover; border-radius:6px; margin-bottom:6px;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
             <div style="font-weight:700; font-size:0.85rem; line-height:1.2; margin-bottom:4px;">${p.name}</div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:800; color:var(--brand-2); font-size:0.9rem;">$${p.price}</span>
+              <span style="font-weight:800; color:var(--brand-2); font-size:0.9rem;">${formatPrice(p.price)}</span>
               <button class="btn" style="padding:4px 8px; font-size:0.7rem; border-radius:6px; margin:0;" data-bot-add="${p._id}">Add</button>
             </div>
           </div>
@@ -540,7 +546,7 @@ async function getLuxeBotReply(q) {
         return `💻 Here is a custom tech setup under your budget:<br/>${cards}`;
       }
     } catch (e) {}
-    return "💻 I recommend a premium Keychron Mechanical Keyboard ($89), Fossil Smartwatch ($299), and Sony XM5 Headphones ($349) for a stunning setup under $1000!";
+    return "💻 I recommend a premium Keychron Mechanical Keyboard (₹7,387), Fossil Smartwatch (₹24,817), and Sony XM5 Headphones (₹28,967) for a stunning setup under ₹83,000!";
   }
 
   if (norm.includes("discount") || norm.includes("deal") || norm.includes("sale")) {
@@ -552,7 +558,7 @@ async function getLuxeBotReply(q) {
           <div style="background:var(--bg); border:1px solid var(--stroke); border-radius:10px; padding:10px; margin-top:8px;">
             <div style="font-weight:700; font-size:0.85rem; line-height:1.2; margin-bottom:4px;">${p.name}</div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span><s>$${p.price}</s> <strong style="color:var(--danger); font-size:0.9rem;">-${p.discount}%</strong></span>
+              <span><s>${formatPrice(p.price)}</s> <strong style="color:var(--danger); font-size:0.9rem;">-${p.discount}%</strong></span>
               <button class="btn" style="padding:4px 8px; font-size:0.7rem; border-radius:6px; margin:0;" data-bot-add="${p._id}">Add</button>
             </div>
           </div>
@@ -573,7 +579,7 @@ async function getLuxeBotReply(q) {
             <div style="font-weight:700; font-size:0.85rem; line-height:1.2; margin-bottom:2px;">${p.name}</div>
             <span class="eco-label" style="font-size:0.65rem; padding:2px 6px; margin-bottom:6px;">🌿 EcoScore: A+</span>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:800; color:var(--success); font-size:0.9rem;">$${p.price}</span>
+              <span style="font-weight:800; color:var(--success); font-size:0.9rem;">${formatPrice(p.price)}</span>
               <button class="btn" style="padding:4px 8px; font-size:0.7rem; border-radius:6px; margin:0;" data-bot-add="${p._id}">Add</button>
             </div>
           </div>

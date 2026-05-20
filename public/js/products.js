@@ -140,10 +140,10 @@ function renderCompareModal() {
               <h3 style="margin:0 0 10px; font-size:1.05rem; font-family:var(--font-heading); line-height:1.3; font-weight:700; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; height:44px;" title="${p.name}">${p.name}</h3>
               
               <div style="background:var(--bg-soft); padding:10px 12px; border-radius:12px; margin-bottom:16px; border:1px solid var(--stroke);">
-                <div style="font-size:1.35rem; font-weight:800; color:var(--brand-2);">$${finalPrice.toFixed(2)}</div>
+                <div style="font-size:1.35rem; font-weight:800; color:var(--brand-2);">${formatPrice(finalPrice)}</div>
                 ${p.discount ? `
                   <div style="font-size:0.78rem; display:flex; justify-content:space-between; margin-top:2px;" class="muted">
-                    <span>Original: <s>$${p.price.toFixed(2)}</s></span>
+                    <span>Original: <s>${formatPrice(p.price)}</s></span>
                     <span style="color:var(--success); font-weight:700;">-${p.discount}% OFF</span>
                   </div>
                 ` : `
@@ -242,73 +242,67 @@ function renderProducts(items) {
   list.innerHTML = items
     .map(product => {
       const finalPrice = product.price * (1 - (product.discount || 0) / 100);
-      const savings = product.price * (product.discount || 0) / 100;
-      const isHighTrust = product.trustScore >= 50;
       const isPopular = product.isTrending || product.isBestSeller;
       const isLimited = product.stock > 0 && product.stock < 20;
-      const ecoVal = product.category === 'Accessories' || product.category === 'Home' ? 'A+' : (product.price > 300 ? 'B' : 'A');
-      const needIndexVal = product.price < 150 ? '85%' : '40%';
-      const wantIndexVal = product.price < 150 ? '15%' : '60%';
-
-      const storyText = product.category === "Electronics"
-        ? "An investment in top-tier performance to streamline your productivity."
-        : product.category === "Accessories"
-        ? "Meticulously crafted detailing that adds effortless style to your daily carry."
-        : "Consciously curated to bring lasting value and comfort into your life.";
+      const inWishlist = getWishlistItems().some(item => item._id === product._id);
 
       return `
       <article class="product-card fade-in">
-        <img class="product-thumb" loading="lazy" decoding="async" src="${product.imageUrl || "/logo.svg"}" alt="${product.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
-        <div class="product-meta">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="pill">${product.category || "General"}</span>
-            <label style="font-size:0.8rem; cursor:pointer;"><input type="checkbox" class="compare-cb" data-id="${product._id}" ${compareList.includes(product._id) ? "checked" : ""}> Compare</label>
-          </div>
-          <div class="badge-row" style="margin-top:8px;">
-            ${product.discount ? `<span class="badge" style="background:#e74c3c;">-${product.discount}% OFF</span>` : ""}
-            ${isHighTrust ? `<span class="badge" style="background:#2ecc71; color:#000;">🛡️ High Trust</span>` : ""}
-            ${isPopular && !isHighTrust ? `<span class="badge" style="background:#f39c12; color:#000;">🔥 Popular</span>` : ""}
-            ${isLimited ? `<span class="badge" style="background:#e67e22; color:#fff;">⏳ Limited Stock</span>` : ""}
-            <span class="eco-label" title="Sustainability Rating">🌿 Eco: ${ecoVal}</span>
-          </div>
-          <h3>${product.name}</h3>
-          <p class="muted" style="margin-bottom: 6px;">${product.description || "No description available."}</p>
+        <!-- Glassmorphic Image Wrapper with Floating Overlays -->
+        <div class="product-card-image-wrap">
+          <img class="product-thumb" loading="lazy" decoding="async" src="${product.imageUrl || "/logo.svg"}" alt="${product.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
           
-          <!-- Smart Mindful Storytelling Snippet -->
-          <div class="story-card" style="margin: 4px 0 10px; font-size: 0.78rem; padding: 8px 12px;">
-            ${storyText}
+          <!-- Badges Overlay -->
+          <div class="image-overlay-badge-container">
+            ${product.discount ? `<span class="image-overlay-badge discount">-${product.discount}% OFF</span>` : ""}
+            ${isLimited ? `<span class="image-overlay-badge" style="background:#e67e22;">⏳ Low Stock</span>` : ""}
+            ${isPopular && !isLimited ? `<span class="image-overlay-badge" style="background:#f39c12; color:#000;">🔥 Popular</span>` : ""}
+          </div>
+          
+          <!-- Glassmorphic Quick View Hover Overlay -->
+          <div class="quick-view-overlay">
+            <button class="btn quick-view-btn-glass" data-quick="${product._id}">Quick View</button>
+          </div>
+          
+          <!-- Floating Wishlist Heart Icon -->
+          <button class="wishlist-overlay-btn" data-wish="${product._id}" title="${inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}" onclick="event.stopPropagation();">
+            ${inWishlist ? "❤️" : "🤍"}
+          </button>
+          
+          <!-- Floating Compare Checkbox Overlay -->
+          <label class="compare-overlay-label" onclick="event.stopPropagation();">
+            <input type="checkbox" class="compare-cb" data-id="${product._id}" ${compareList.includes(product._id) ? "checked" : ""}>
+            <span>Compare</span>
+          </label>
+          
+          <!-- Admin Tools Overlay Toolbar (displayed on card hover) -->
+          ${isAdmin ? `
+            <div class="admin-hover-toolbar">
+              <button class="btn btn-secondary" data-edit="${product._id}">Edit</button>
+              <button class="btn btn-danger" data-delete="${product._id}">Delete</button>
+            </div>
+          ` : ""}
+        </div>
+
+        <div class="product-meta" style="margin-top: 12px; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+          <div>
+            <!-- Category Pill -->
+            <span class="pill" style="font-size: 0.65rem; padding: 2px 8px; margin-bottom: 6px;">${product.category || "General"}</span>
+            
+            <!-- Clean Minimal Product Title -->
+            <h3 style="margin: 4px 0 0; font-size: 0.98rem; min-height: 40px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;" title="${product.name}">${product.name}</h3>
           </div>
 
-          <div style="background:var(--bg-input); padding:8px; border-radius:4px; margin:8px 0;">
-            <div class="price-line" style="margin-bottom:0;">
-              <span class="price">$${finalPrice.toFixed(2)}</span>
-              <span class="rating">★ ${getRating(product)}</span>
+          <div style="margin-top: 10px;">
+            <!-- Clean Price and Rating Row -->
+            <div class="price-line" style="margin-bottom: 12px; align-items: baseline;">
+              <span class="price" style="font-size: 1.18rem; font-weight: 800; color: var(--brand-2);">${formatPrice(finalPrice)}</span>
+              <span class="rating" style="font-size: 0.85rem;">★ ${getRating(product)}</span>
             </div>
-            ${product.discount ? `
-              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-top:4px;">
-                <span class="muted">Original: <s>$${product.price.toFixed(2)}</s></span>
-                <span style="color:#2ecc71; font-weight:bold;">You Save: $${savings.toFixed(2)}</span>
-              </div>
-            ` : ""}
-          </div>
 
-          <!-- Need vs Want Purchase Mindful Slider Indicator -->
-          <div class="need-slider-wrap" style="margin-top: 4px; margin-bottom: 12px; padding: 8px 10px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:600;" class="muted">
-              <span>Need index: ${needIndexVal}</span>
-              <span>Want index: ${wantIndexVal}</span>
-            </div>
-            <div class="need-bar" style="height: 4px; margin-top: 4px;">
-              <div class="need-bar-fill" style="width: ${needIndexVal};"></div>
-            </div>
+            <!-- Quick Add to Cart Action -->
+            <button class="btn" data-cart="${product._id}" style="width: 100%; justify-content: center; font-weight: 700; margin-top: auto; padding: 10px 0;">🛒 Add to Cart</button>
           </div>
-
-          <div class="actions">
-            <button class="btn btn-secondary" data-quick="${product._id}">Quick View</button>
-            <button class="btn" data-cart="${product._id}">Add to Cart</button>
-            <button class="btn" data-buy="${product._id}">Buy Now</button>
-          </div>
-          ${isAdmin ? `<div class="actions" style="margin-top:8px;"><button class="btn btn-secondary" data-edit="${product._id}">Edit</button><button class="btn btn-danger" data-delete="${product._id}">Delete</button></div>` : ""}
         </div>
       </article>`;
     })
@@ -429,7 +423,7 @@ function rootQuickView(product) {
         <span class="pill">${product.category || "General"}</span>
         <h2>${product.name}</h2>
         <p class="muted">${product.description || ""}</p>
-        <p class="price">$${(product.price * (1 - (product.discount || 0) / 100)).toFixed(2)}</p>
+        <p class="price">${formatPrice(product.price * (1 - (product.discount || 0) / 100))}</p>
         <div class="actions">
           <a class="btn btn-secondary" href="/product.html?id=${product._id}">Open Details</a>
           <button id="quick-buy">Buy Now</button>
@@ -484,7 +478,7 @@ function renderTopSections(items) {
         <img class="product-thumb" loading="lazy" decoding="async" src="${product.imageUrl || "/logo.svg"}" alt="${product.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=800';" />
         <div class="product-meta">
           <h4>${product.name}</h4>
-          <div class="price-line"><span class="price">$${finalPrice.toFixed(2)}</span><button class="btn btn-secondary" data-quick="${product._id}">Quick View</button></div>
+          <div class="price-line"><span class="price">${formatPrice(finalPrice)}</span><button class="btn btn-secondary" data-quick="${product._id}">Quick View</button></div>
         </div>
       </article>`;
   };
@@ -510,7 +504,7 @@ function renderRecommendedSection(items) {
         <div class="product-meta">
           <span class="badge" style="background:var(--brand); color:#fff; position:absolute; top:10px; right:10px;">⭐ For You</span>
           <h4>${product.name}</h4>
-          <div class="price-line"><span class="price">$${finalPrice.toFixed(2)}</span><button class="btn btn-secondary" data-quick="${product._id}">Quick View</button></div>
+          <div class="price-line"><span class="price">${formatPrice(finalPrice)}</span><button class="btn btn-secondary" data-quick="${product._id}">Quick View</button></div>
         </div>
       </article>`;
   };

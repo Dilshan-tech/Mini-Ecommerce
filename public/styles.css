@@ -1069,3 +1069,267 @@ label {
     height: 420px;
   }
 }
+
+/* ========================================== */
+/* LuxeCart Premium UI/UX Redesign Upgrades   */
+/* ========================================== */
+
+/* Premium Image Wrap inside Minimal Cards */
+.product-card-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.03);
+}
+
+.product-card-image-wrap .product-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover .product-thumb {
+  transform: scale(1.05);
+}
+
+/* Glassmorphic Overlays on Product Card Images */
+.image-overlay-badge-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.image-overlay-badge {
+  background: rgba(3, 7, 18, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.image-overlay-badge.discount {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border: none;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+}
+
+/* Absolute Floating Action Buttons on Card Images */
+.wishlist-overlay-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 99px;
+  background: rgba(3, 7, 18, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.85rem;
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.wishlist-overlay-btn:hover {
+  transform: scale(1.15);
+  background: rgba(3, 7, 18, 0.85);
+  border-color: rgba(236, 72, 153, 0.5);
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.2);
+}
+
+.compare-overlay-label {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(3, 7, 18, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.25s ease;
+  user-select: none;
+  color: white;
+}
+
+.compare-overlay-label:hover {
+  background: rgba(3, 7, 18, 0.85);
+  border-color: var(--brand);
+}
+
+.compare-overlay-label input {
+  margin: 0;
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+}
+
+/* Glassmorphic Quick View Overlay on Hover */
+.quick-view-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.product-card-image-wrap:hover .quick-view-overlay {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.quick-view-btn-glass {
+  background: rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+  padding: 8px 14px !important;
+  font-size: 0.78rem !important;
+  border-radius: 8px !important;
+  transform: translateY(10px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.product-card-image-wrap:hover .quick-view-btn-glass {
+  transform: translateY(0);
+}
+
+.quick-view-btn-glass:hover {
+  background: white !important;
+  color: black !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Admin Hover Toolbar */
+.admin-hover-toolbar {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  z-index: 10;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(5px);
+}
+
+.product-card:hover .admin-hover-toolbar {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+.admin-hover-toolbar button {
+  padding: 4px 8px !important;
+  font-size: 0.68rem !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+}
+
+/* Custom styles for detail grid layout sections */
+.detail-grid-container {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.detail-glass-card {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.detail-premium-price-box {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(6, 182, 212, 0.04));
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.detail-eco-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 16px;
+}
+
+.detail-slider-card {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.detail-story-card {
+  border-left: 4px solid var(--brand);
+  background: rgba(99, 102, 241, 0.03);
+  padding: 16px;
+  border-radius: 0 16px 16px 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--text);
+}
+
+.detail-gallery-card {
+  position: sticky;
+  top: 98px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
